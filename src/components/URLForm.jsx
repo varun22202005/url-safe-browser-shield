@@ -1,7 +1,5 @@
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Shield } from "lucide-react";
 
 const URLForm = ({ onSubmit, isLoading }) => {
@@ -15,32 +13,34 @@ const URLForm = ({ onSubmit, isLoading }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-3xl">
-      <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-2">
-        <Input
+    <form onSubmit={handleSubmit} className="w-100" style={{ maxWidth: "800px" }}>
+      <div className="d-flex flex-column flex-md-row gap-2">
+        <input
           type="text"
           placeholder="Enter URL to check (e.g., https://example.com)"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="flex-1 border-2 h-12 text-base px-4"
+          className="form-control form-control-lg flex-grow-1"
         />
-        <Button 
+        <button 
           type="submit" 
-          className="h-12 px-6 bg-primary hover:bg-primary/90"
+          className="btn btn-primary btn-lg d-flex align-items-center justify-content-center"
           disabled={isLoading || !url.trim()}
         >
           {isLoading ? (
-            <span className="flex items-center">
-              <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            <span className="d-flex align-items-center">
+              <div className="spinner-border spinner-border-sm me-2" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
               Scanning...
             </span>
           ) : (
-            <span className="flex items-center">
-              <Shield className="mr-2 h-5 w-5" />
+            <span className="d-flex align-items-center">
+              <Shield className="me-2" style={{ width: "20px", height: "20px" }} />
               Analyze URL
             </span>
           )}
-        </Button>
+        </button>
       </div>
     </form>
   );

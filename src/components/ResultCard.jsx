@@ -1,37 +1,36 @@
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SecurityIndicator from "./SecurityIndicator";
 
 const ResultCard = ({ result }) => {
+  const getProgressBarVariant = () => {
+    if (result.score < 30) return "success";
+    if (result.score < 70) return "warning";
+    return "danger";
+  };
+
   return (
-    <Card className="w-full max-w-3xl card-gradient">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <div className="card w-100 shadow" style={{ maxWidth: "800px" }}>
+      <div className="card-header d-flex justify-content-between align-items-center">
         <div>
-          <CardTitle className="text-xl">URL Analysis Result</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1 break-all max-w-[85%]">
+          <h5 className="card-title">URL Analysis Result</h5>
+          <p className="text-muted small mb-0 text-break" style={{ maxWidth: "85%" }}>
             {result.url}
           </p>
         </div>
         <SecurityIndicator status={result.status} />
-      </CardHeader>
+      </div>
       
-      <CardContent className="space-y-4">
-        <div>
-          <h3 className="font-medium text-lg mb-2">Risk Score</h3>
-          <div className="relative w-full h-4 bg-secondary rounded-full overflow-hidden">
+      <div className="card-body">
+        <div className="mb-4">
+          <h6 className="fw-medium mb-2">Risk Score</h6>
+          <div className="progress" role="progressbar" aria-valuenow={result.score} aria-valuemin="0" aria-valuemax="100">
             <div 
-              className={`h-full ${
-                result.score < 30 
-                  ? "bg-safe" 
-                  : result.score < 70 
-                    ? "bg-warning" 
-                    : "bg-danger"
-              }`}
+              className={`progress-bar bg-${getProgressBarVariant()}`}
               style={{ width: `${result.score}%` }}
-            />
+            ></div>
           </div>
-          <div className="flex justify-between text-sm mt-1">
+          <div className="d-flex justify-content-between small mt-1">
             <span>Low Risk</span>
             <span>High Risk</span>
           </div>
@@ -39,18 +38,20 @@ const ResultCard = ({ result }) => {
 
         {result.riskFactors.length > 0 && (
           <div>
-            <h3 className="font-medium text-lg mb-2">
+            <h6 className="fw-medium mb-2">
               {result.status === "safe" ? "Analysis Notes" : "Risk Factors"}
-            </h3>
-            <ul className="list-disc pl-5 space-y-1">
+            </h6>
+            <ul className="list-group">
               {result.riskFactors.map((factor, index) => (
-                <li key={index} className="text-sm">{factor}</li>
+                <li key={index} className="list-group-item list-group-item-action list-group-item-light small">
+                  {factor}
+                </li>
               ))}
             </ul>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

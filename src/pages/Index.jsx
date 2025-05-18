@@ -1,15 +1,16 @@
 
 import React, { useState } from "react";
 import { Shield } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import URLForm from "@/components/URLForm";
 import ResultCard from "@/components/ResultCard";
 import InfoSection from "@/components/InfoSection";
+import RiskAlert from "@/components/RiskAlert";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
-  const { toast } = useToast();
+  const [showRiskAlert, setShowRiskAlert] = useState(false);
 
   // This is a mock function to simulate URL analysis
   // In a real implementation, this would call a backend API
@@ -27,6 +28,7 @@ const Index = () => {
         const hasLongUrlString = url.length > 100;
         const hasIPAddress = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(url);
         const hasUncommonPort = /:[0-9]{2,5}/.test(url);
+        const hasUnauthorizedParameter = /(password|token|auth|key)=/i.test(url);
         
         // Calculate risk score (0-100)
         let riskScore = 0;
@@ -37,6 +39,7 @@ const Index = () => {
         if (hasLongUrlString) riskScore += 10;
         if (hasIPAddress) riskScore += 30;
         if (hasUncommonPort) riskScore += 20;
+        if (hasUnauthorizedParameter) riskScore += 40;
         
         // Cap at 100
         riskScore = Math.min(riskScore, 100);
@@ -65,22 +68,37 @@ const Index = () => {
           if (hasLongUrlString) riskFactors.push("Unusually long URL (may hide malicious content)");
           if (hasIPAddress) riskFactors.push("Uses IP address instead of domain name");
           if (hasUncommonPort) riskFactors.push("Uses uncommon network port");
+          if (hasUnauthorizedParameter) riskFactors.push("Contains sensitive parameters in URL (security risk)");
         }
         
-        setAnalysisResult({
+        const result = {
           url,
           status,
           score: riskScore,
           riskFactors,
-        });
+        };
         
+        setAnalysisResult(result);
         setIsLoading(false);
+        
+        // Show notifications for risky URLs
+        if (status === "warning" || status === "danger") {
+          setShowRiskAlert(true);
+          
+          // Also show toast notification
+          const toastMessage = status === "danger" 
+            ? "High Risk URL detected! Be extremely cautious."
+            : "Suspicious URL detected. Proceed with caution.";
+            
+          toast.error(toastMessage, {
+            description: "This URL may be attempting to steal your information.",
+            duration: 6000,
+          });
+        }
       } catch (error) {
         console.error("Error analyzing URL:", error);
-        toast({
-          title: "Analysis Error",
+        toast.error("Analysis Error", {
           description: "Failed to analyze the URL. Please try again.",
-          variant: "destructive",
         });
         setIsLoading(false);
       }
@@ -88,44 +106,43 @@ const Index = () => {
   };
 
   const handleSubmit = (url) => {
+    setShowRiskAlert(false); // Reset alert state
     analyzeURL(url);
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-6xl mx-auto px-4 py-8 space-y-10">
-        <header className="text-center space-y-4">
-          <div className="flex items-center justify-center">
-            <Shield className="h-10 w-10 text-primary mr-2" />
-            <h1 className="text-3xl font-bold md:text-4xl">URL Shield</h1>
-          </div>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Protect yourself from phishing attacks. Analyze any suspicious URL before clicking
-            to detect potential security threats and stay safe online.
-          </p>
-        </header>
-
-        <div className="flex flex-col items-center space-y-8">
-          <URLForm onSubmit={handleSubmit} isLoading={isLoading} />
-          
-          {analysisResult && <ResultCard result={analysisResult} />}
-          
-          {!analysisResult && (
-            <div className="w-full max-w-3xl h-24 flex items-center justify-center rounded-lg bg-muted/30 border-2 border-dashed animate-pulse-slow">
-              <p className="text-muted-foreground">
-                Enter a URL above to analyze it for phishing threats
-              </p>
-            </div>
-          )}
-          
-          <InfoSection />
+    <div className="container py-5">
+      <header className="text-center mb-5">
+        <div className="d-flex align-items-center justify-content-center mb-2">
+          <Shield className="me-2" style={{ width: "40px", height: "40px", color: "#0d6efd" }} />
+          <h1 className="display-4 fw-bold">URL Shield</h1>
         </div>
+        <p className="lead text-muted mx-auto" style={{ maxWidth: "700px" }}>
+          Protect yourself from phishing attacks. Analyze any suspicious URL before clicking
+          to detect potential security threats and stay safe online.
+        </p>
+      </header>
 
-        <footer className="text-center text-sm text-muted-foreground pt-10">
-          <p>URL Shield - Phishing Detection Tool</p>
-          <p className="mt-1">This is a demo application. For actual security protection, use established security software.</p>
-        </footer>
+      <div className="d-flex flex-column align-items-center gap-4">
+        <RiskAlert risk={analysisResult?.status} show={showRiskAlert} />
+        
+        <URLForm onSubmit={handleSubmit} isLoading={isLoading} />
+        
+        {analysisResult && <ResultCard result={analysisResult} />}
+        
+        {!analysisResult && (
+          <div className="w-100 bg-light border border-2 border-dashed rounded p-4 text-center text-muted" style={{ maxWidth: "800px", height: "100px" }}>
+            Enter a URL above to analyze it for phishing threats
+          </div>
+        )}
+        
+        <InfoSection />
       </div>
+
+      <footer className="text-center text-muted mt-5 pt-4 border-top">
+        <small>URL Shield - Phishing Detection Tool</small>
+        <p className="mt-1"><small>This is a demo application. For actual security protection, use established security software.</small></p>
+      </footer>
     </div>
   );
 };

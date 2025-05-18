@@ -1,51 +1,48 @@
 
 import React from "react";
-import { cn } from "@/lib/utils";
 import { Shield, ShieldAlert, ShieldOff } from "lucide-react";
 
-const SecurityIndicator = ({ 
-  status, 
-  className 
-}) => {
+const SecurityIndicator = ({ status, className }) => {
   const getStatusConfig = () => {
     switch (status) {
       case "safe":
         return {
           icon: Shield,
           text: "Safe",
-          color: "bg-safe text-safe-foreground",
+          bootstrapClass: "bg-success text-white",
+          alertType: "success"
         };
       case "warning":
         return {
           icon: ShieldAlert,
           text: "Suspicious",
-          color: "bg-warning text-warning-foreground",
+          bootstrapClass: "bg-warning text-dark",
+          alertType: "warning"
         };
       case "danger":
         return {
           icon: ShieldOff,
           text: "Dangerous",
-          color: "bg-danger text-danger-foreground",
+          bootstrapClass: "bg-danger text-white",
+          alertType: "danger"
         };
       default:
         return {
           icon: Shield,
           text: "Unknown",
-          color: "bg-muted text-muted-foreground",
+          bootstrapClass: "bg-secondary text-white",
+          alertType: "secondary"
         };
     }
   };
 
-  const { icon: Icon, text, color } = getStatusConfig();
+  const { icon: Icon, text, bootstrapClass } = getStatusConfig();
 
   return (
-    <div className={cn("flex items-center", className)}>
-      <div className={cn(
-        "flex items-center justify-center rounded-full px-4 py-1", 
-        color
-      )}>
-        <Icon className="h-4 w-4 mr-2" />
-        <span className="font-medium">{text}</span>
+    <div className={`d-flex align-items-center ${className}`}>
+      <div className={`d-flex align-items-center justify-content-center rounded px-3 py-1 ${bootstrapClass}`}>
+        <Icon className="me-2" style={{ width: "16px", height: "16px" }} />
+        <span className="fw-medium">{text}</span>
       </div>
     </div>
   );
